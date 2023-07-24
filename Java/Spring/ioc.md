@@ -180,7 +180,7 @@ public interface InstantiationStrategy {
 #### Aware接口
 
 Spring会检查Bean对象实例是否实现了某些以 `Aware` 结尾的接口，会将接口定义中规定的依赖注入到Bean实例对象中  
-可以用于获取与框架底层相关的对象
+可以用于获取与框架底层相关的对象  
 
 
 

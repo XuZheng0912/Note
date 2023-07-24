@@ -182,6 +182,54 @@ public interface InstantiationStrategy {
 Spring会检查Bean对象实例是否实现了某些以 `Aware` 结尾的接口，会将接口定义中规定的依赖注入到Bean实例对象中  
 可以用于获取与框架底层相关的对象  
 
+#### BeanPostProcessor
 
+`BeanPostProcessor` 会处理容器内所有符合条件的实例化后的对象实例
+
+**注意**  
+`BeanPostProcessor` 存在于Bean实例化阶段  
+`BeanFactoryPostProcessor` 存在与容器初始化阶段
+
+`BeanPostProcessor` 接口定义  
+```java
+package org.springframework.beans.factory.config;
+
+import org.springframework.beans.BeansException;
+import org.springframework.lang.Nullable;
+
+public interface BeanPostProcessor {
+    
+	@Nullable
+	default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		return bean;
+	}
+    
+	@Nullable
+	default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+		return bean;
+	}
+}
+```
+在该接口的定义的两个方法中都传入了Bean实例对象，可以对Bean实例执行任意操作  
+接口常见使用场景：处理标记接口实现类，或者为当前对象提供代理实现  
+`Aware` 接口注入依赖就是通过 `BeanPostProcessor`进行处理的
+
+***`BeanPostProcessor`是容器提供的对象实例化阶段的强有力扩展点***
+
+#### InitializingBean接口
+
+生命周期标识接口  
+接口定义
+```java
+package org.springframework.beans.factory;
+
+public interface InitializingBean {
+    
+	void afterPropertiesSet() throws Exception;
+
+}
+```
+在对象实例化过程调用过 `BeanPostProcessor` 的 `postProcessBeforeInitialization`方法后  
+会接着检测当前对象是否实现了 `InitializingBean` 接口，如果是则调用 `afterPropertiesSet` 方法进一步调整实例状态  
 
 

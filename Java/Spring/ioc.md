@@ -232,4 +232,73 @@ public interface InitializingBean {
 在对象实例化过程调用过 `BeanPostProcessor` 的 `postProcessBeforeInitialization`方法后  
 会接着检测当前对象是否实现了 `InitializingBean` 接口，如果是则调用 `afterPropertiesSet` 方法进一步调整实例状态  
 
+但为了框架与应用的解耦，Spring在Bean的配置属性中提供了 `init-method` 属性来指定初始化方法  
+还可以在顶层 `beans` 标签中设置 `default-init-method` 属性来统一命名指定初始化方法
+不受限于 `InitializingBean` 接口方法  
+根据耦合接受度来选择初始化方式
+
+---
+
+## ApplicationContext
+
+### 统一资源加载策略
+
+`java.net.URL` 的资源定位以及查找范围狭隘且功能孱弱  
+因此Spring推出了基于 `Resource` 和 `ResourceLoader` 接口的资源加载策略
+
+#### Resource
+
+`Resource` 接口应该可以根据资源的不同类型，或者资源所处的不同场合，给出响应的具体实现
+* `ByteArrayResource`
+* `ClasspathResource`
+* `FileSystemResource`
+* `UrlResource`
+* `InputStreamResource` 较为少用，应该尝试使用 `ByteArrayResource` 代替  
+如果上述实现类不能满足需求，也可以实现 `Resource` 接口或者更简易地继承 `AbstractResource` 抽象类来实现自定义资源类
+
+#### ResourceLoader
+
+该接口是资源查找定位策略的统一抽象
+
+##### DefaultResourceLoader
+
+`ResourceLoader` 接口的默认实现类，资源查找逻辑如下：
+* 首先检查资源路径是否以`classpath:`前缀打头，如果是则尝试构造 `ClasspathResource` 返回
+* 否则尝试通过URL来定位资源，定位失败则构造一个不存在的 `ClasspathResource` 返回  
+该实现类的功能是不健全的，应该考虑使用更具体地实现类
+
+##### ResourcePatternResolver
+
+可以根据指定的资源路径匹配模式，返回多个 `Resource` 实例  
+最常用的实现是 `PathMatchingResourcePatternResolver` ，基本上集所有技能于一身  
+在构造 `PathMatchingResourcePatternResolver` 时可以指定一个 `ResourceLoader`  
+如果不指定，则内部会构造一个 `DefaultResourceLoader`  
+最终在查找资源时，会委派给持有的 `ResourceLoader` 对象进行查找
+ 
+##### ApplicationContext与ResourceLoader
+
+`ApplicationContext` 继承了 `ResourcePatternResolver` 
+所有的 `ApplicationContext` 继承 `AbstractApplicationContext`  
+`AbstractApplicationContext` 继承 `DefaultResourceLoader`  
+即 `ApplicationContext` 的实现类将自身作为 `ResourceLoader` 传递给自己持有的 `PathMatchingResourcePatternResolver`  
+在执行资源定位查找时将任务委派给自身持有的 `PathMatchingResourcePatternResolver`  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
